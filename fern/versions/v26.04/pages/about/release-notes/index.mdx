@@ -20,6 +20,16 @@ Upgraded Cosmos-Xenna from 0.1.2 to 0.2.0 with a simplified resource model and i
 - **Xenna-managed CUDA devices**: Xenna now manages CUDA device visibility directly, replacing the previous Ray-managed approach.
 - **Ray 2.54**: Updated Ray dependency to version 2.54 for compatibility with Cosmos-Xenna 0.2.0.
 
+### Filter and Modifier Directory Reorganization (PR #1472)
+
+Reorganized the `DocumentFilter` and `DocumentModifier` directory structures to avoid eagerly importing heavyweight dependencies:
+
+- **Lazy imports**: Importing `DocumentFilter` or `DocumentModifier` no longer pulls in heavyweight dependencies such as HuggingFace Transformers, fastText, or histogram libraries.
+- **Filters grouped by dependency weight**: Filters now use `heuristic/`, `token/`, `histogram/`, and `fasttext/` subdirectories.
+- **Modifiers grouped by type**: Modifiers now use `string/`, `unicode/`, and `fasttext/` subdirectories.
+- **`ScoreFilter`, `Filter`, and `Score` relocated**: These stages now live in `stages.text.filters` instead of `stages.text.modules`.
+- **`Modify` relocated**: This stage now lives in `stages.text.modifiers` instead of `stages.text.modules`.
+
 ## Dependency Updates
 
 - **Cosmos-Xenna**: Updated from 0.1.2 to 0.2.0 with simplified resource model
