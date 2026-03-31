@@ -20,12 +20,24 @@ Upgraded Cosmos-Xenna from 0.1.2 to 0.2.0 with a simplified resource model and i
 - **Xenna-managed CUDA devices**: Xenna now manages CUDA device visibility directly, replacing the previous Ray-managed approach.
 - **Ray 2.54**: Updated Ray dependency to version 2.54 for compatibility with Cosmos-Xenna 0.2.0.
 
+### Worker Recycling for JusText Extraction (PR #1534)
+
+Added `max_calls_per_worker` support to mitigate out-of-memory errors caused by memory fragmentation in long-running extraction jobs, particularly with jusText and lxml:
+
+- **Automatic Worker Recycling for JusText**: `CommonCrawlDownloadExtractStage` now defaults to `extractor_max_calls_per_worker=2` when using `JusTextExtractor`, automatically restarting worker processes every two tasks to reclaim fragmented memory.
+- **Configurable `max_calls_per_worker`**: `DocumentIterateExtractStage` accepts a new `max_calls_per_worker` parameter that instructs the Ray Data executor to restart worker processes after a specified number of tasks. This is useful for any extraction stage that uses C libraries prone to heap fragmentation, such as lxml.
+- **`extractor_max_calls_per_worker` on Composite Stages**: `DocumentDownloadExtractStage` and `CommonCrawlDownloadExtractStage` expose this setting through `extractor_max_calls_per_worker`, which propagates to the underlying iterate-extract stage.
+
+## Bug Fixes
+
+### JusText Extraction OOM (PR #1534)
+
+Fixed out-of-memory errors during long-running jusText extraction jobs. Memory fragmentation from lxml/libxml2 C-heap allocations caused RSS growth across workers until the process ran out of memory. Worker recycling through `max_calls_per_worker` now prevents this by restarting worker processes periodically.
+
 ## Dependency Updates
 
 - **Cosmos-Xenna**: Updated from 0.1.2 to 0.2.0 with simplified resource model
 - **Ray**: Updated to 2.54
-
-## Bug Fixes
 
 ### Audio Stage Name Propagation (PR #1470)
 
