@@ -12,6 +12,13 @@ modality: "universal"
 
 ## What's New in 26.04
 
+### RayDataExecutor Promoted from Experimental (PR #1619)
+
+Moved `RayDataExecutor` out of the experimental namespace to `nemo_curator.backends.ray_data`. The executor is no longer marked as experimental, and the startup warning has been removed. Import path changes:
+
+- **Before**: `from nemo_curator.backends.experimental.ray_data import RayDataExecutor`
+- **After**: `from nemo_curator.backends.ray_data import RayDataExecutor`
+
 ### Cosmos-Xenna 0.2.0 (PR #1571)
 
 Upgraded Cosmos-Xenna from 0.1.2 to 0.2.0 with a simplified resource model and improved GPU management:
@@ -34,3 +41,4 @@ Fixed audio pipeline stage names not propagating in `StagePerfStats`, making ben
 ## Breaking Changes
 
 - **`Resources` API**: The `nvdecs`, `nvencs`, and `entire_gpu` fields have been removed from `Resources`. Stages that previously used `entire_gpu=True` should use `gpus=1` instead. Stages that used `nvdecs` or `nvencs` should use `gpus` for GPU allocation.
+- **`RayDataExecutor` import path**: Moved from `nemo_curator.backends.experimental.ray_data` to `nemo_curator.backends.ray_data`. Update imports accordingly.
