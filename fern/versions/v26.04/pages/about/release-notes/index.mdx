@@ -12,6 +12,15 @@ modality: "universal"
 
 ## What's New in 26.04
 
+### vLLM Default for Semantic Deduplication Embeddings (PR #1606)
+
+Switched the default embedding backend in `TextSemanticDeduplicationWorkflow` from SentenceTransformers to vLLM, with `google/embeddinggemma-300m` as the new default model:
+
+- **vLLM embedding backend**: `TextSemanticDeduplicationWorkflow` now uses `VLLMEmbeddingModelStage` for embedding generation, replacing `EmbeddingCreatorStage` (SentenceTransformers).
+- **New default model**: Changed from `sentence-transformers/all-MiniLM-L6-v2` to `google/embeddinggemma-300m`.
+- **New parameters**: Added `embedding_pretokenize`, `embedding_vllm_init_kwargs`, `embedding_max_chars`, and `model_cache_dir` for vLLM configuration.
+- **Removed parameters**: The SentenceTransformers-specific parameters `embedding_model_inference_batch_size`, `embedding_pooling`, and `embedding_max_seq_length` are no longer available.
+
 ### Cosmos-Xenna 0.2.0 (PR #1571)
 
 Upgraded Cosmos-Xenna from 0.1.2 to 0.2.0 with a simplified resource model and improved GPU management:
@@ -27,10 +36,15 @@ Upgraded Cosmos-Xenna from 0.1.2 to 0.2.0 with a simplified resource model and i
 
 ## Bug Fixes
 
+### CUDA Fork Error with vLLM and RayDataExecutor (PR #1606)
+
+Fixed a `RuntimeError: Cannot re-initialize CUDA in forked subprocess` error that occurred when running vLLM stages with `RayDataExecutor`. The vLLM auto-detection for `spawn` versus `fork` multiprocessing only triggers inside Ray actors, not Ray tasks. The `RayDataExecutor.execute_setup_on_node` method dispatches `setup_on_node` as a remote task, so vLLM previously defaulted to `fork` and caused a CUDA reinitialization error. Fixed by setting `VLLM_WORKER_MULTIPROC_METHOD=spawn` in the remote task.
+
 ### Audio Stage Name Propagation (PR #1470)
 
 Fixed audio pipeline stage names not propagating in `StagePerfStats`, making benchmark output unable to identify per-stage timing. All audio stages (`GetAudioDurationStage`, `PreserveByValueStage`, `AudioToDocumentStage`, `GetPairwiseWerStage`) now correctly report their names, and stage performance history persists when stages create new task objects.
 
 ## Breaking Changes
 
+- **`TextSemanticDeduplicationWorkflow` embedding backend**: The default embedding backend changed from SentenceTransformers to vLLM. The default model changed from `sentence-transformers/all-MiniLM-L6-v2` to `google/embeddinggemma-300m`. The parameters `embedding_model_inference_batch_size`, `embedding_pooling`, and `embedding_max_seq_length` have been removed. Use `embedding_vllm_init_kwargs` to pass configuration to the vLLM backend instead.
 - **`Resources` API**: The `nvdecs`, `nvencs`, and `entire_gpu` fields have been removed from `Resources`. Stages that previously used `entire_gpu=True` should use `gpus=1` instead. Stages that used `nvdecs` or `nvencs` should use `gpus` for GPU allocation.
